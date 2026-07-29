@@ -24,13 +24,20 @@ class TaskManager:
         
         
     def showTasks(self):
+        print("  ID  |     Name     |    Priority    |   State   ")
         for task in self.tasks:
             if task.state == 0:
                 state = "Pending"
             else: 
                 state = "Completed"
-            print(task.taskid,task.name,state,sep="-",end="")
-            print(" -> ", end="")
+            if task.priority == 1:
+                priority = "High"
+            elif task.priority == 2:
+                priority = "Medium"
+            else:
+                priority = "low"
+            print(f"  {task.taskid}        {task.name}          {priority}         {state}")
+            
             
     def deleteTask(self,id):
         i = id - 1
@@ -43,13 +50,17 @@ class TaskManager:
         task.state = 1
     
         
-       
+def clearTerminal():
+    os.system("cls")
                 
         
 def welcome():
     print("=====================================")
     print("       Welcome to TaskManager        ")  
     print("=====================================")
+    time.sleep(1)
+    
+    
 
 
 
@@ -66,33 +77,51 @@ def AddTask(taskmanager):
     
 def ModifyTask(taskmanager):
     print("...EDIT A TASK...")
-    id = input("Write the Id of the task to be edited.")
+    id = int(input("Write the Id of the task to be edited."))
+    clearTerminal()
+    print("...EDIT A TASK...")
     i = id - 1
-    mytask = taskmanager[i]
+    mytask = taskmanager.tasks[i]
+    if mytask.priority == 1:
+        priority = "High"
+    elif mytask.priority == 2:
+        priority = "Medium"
+    else:
+        priority = "Low"
+    print(f"Task to be edited: Name:{mytask.name}, Description:{mytask.description}, Priority{priority}\n")
+    print("       -----------------------------------------------------------           \n")
     option = int(input("1.Name\n2.Description\n3.Priority\n4.Cancel\nChoose an option from the menu using the numbers:")) 
     match option:
         case 1:
-            newdata = input("Write the new name: ")
+            newdata = input(f"Name:{mytask.name}\nWrite the new name: ")
             mytask.name = newdata
         case 2:
-            newdata = input("Write the new description: ")
+            newdata = input(f"Description:{mytask.description}\nWrite the new description: ")
             mytask.description = newdata
         case 3:
-            newdata = int(input("Write the new priority using numbers only(1.High, 2.Medium, 3.Low): "))
+            newdata = int(input(f"Priority:{priority}\nWrite the new priority using numbers only(1.High, 2.Medium, 3.Low): "))
             mytask.priority = newdata
         case 4:
             print("Canceling...")
         case _:
             print("This option is not available, please choose one from the menu.")
+    print("Task edited correctly.")
             
     
         
 def DeleteTask(taskmanager):
     print("...DELET A TASK...")
     id = int(input("Write the id of the task to be deleted: "))
+    clearTerminal()
+    print("...DELET A TASK...")
     i = id - 1
-    taskmanager.deleteTask(id)
-    print("Task deleted correctly.")
+    confirm = input(f"Are you sure you want to delete ({taskmanager.tasks[i].name})? use y/n to yes or no")
+    if confirm == "y":
+        taskmanager.deleteTask(id)
+        print("Task deleted correctly.")
+    else:
+        print("Operation canceled.")
+    
 
 def MarkCompleted(taskmanager):
     print("...MARK A TASK COMPLETED...")
@@ -112,44 +141,46 @@ def menu():
     option = int(input("Choose an option from the menu using the numbers: "))
     return option
 
-def clearTerminal():
-    os.system("cls")
 
-def main(key):
+
+
+
+def main(mytaskmanager: TaskManager):
     welcome()
-    clearTerminal()
-    option = menu()
-    match option:
-        case 1: 
-            clearTerminal()
-            AddTask(mytaskmanager)
-            time.sleep(2)
-        case 2:
-            clearTerminal()
-            ModifyTask(mytaskmanager)
-            time.sleep(2)
-        case 3:
-            clearTerminal()
-            DeleteTask(mytaskmanager)
-            time.sleep(2)
-        case 4:
-            clearTerminal()
-            MarkCompleted(mytaskmanager)
-            time.sleep(2)
-        case 5:
-            clearTerminal()
-            mytaskmanager.showTasks()
-            input("Press any key to go to menu... ")
-        case 6:
-            print("Exiting....")
-            key = False
-            time.sleep(5)
-        case _:
-            print("Sorry this option is not available.")
+    key = True
+    while key:
+        clearTerminal()
+        option = menu()
+        match option:
+            case 1: 
+                clearTerminal()
+                AddTask(mytaskmanager)
+                time.sleep(1)
+            case 2:
+                clearTerminal()
+                ModifyTask(mytaskmanager)
+                time.sleep(1)
+            case 3:
+                clearTerminal()
+                DeleteTask(mytaskmanager)
+                time.sleep(1)
+            case 4:
+                clearTerminal()
+                MarkCompleted(mytaskmanager)
+                time.sleep(1)
+            case 5:
+                clearTerminal()
+                mytaskmanager.showTasks()
+                input("\n\nPress any key to go to menu... ")
+            case 6:
+                print("Exiting....")
+                key = False
+                time.sleep(2)
+                clearTerminal()
+            case _:
+                print("Sorry this option is not available.")
         
         
-        
+clearTerminal()
 mytaskmanager = TaskManager()              
-key = True
-while key:
-    main(key)
+main(mytaskmanager)
