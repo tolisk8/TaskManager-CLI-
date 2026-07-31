@@ -1,26 +1,45 @@
 import os
 import time
+import json
+from pathlib import Path
+
+
 class Task:
-    def __init__(self,TaskName: str, Description: str,Priority:str,TaskId = None):
+    def __init__(self,TaskName: str, Description: str,Priority:str,TaskId: int = None,TaskState = 0):
             self.taskid = TaskId
             self.name = TaskName
             self.description = Description
             self.priority = Priority
-            self.state = 0
+            self.state = TaskState
+            
+    def toDictionary(self):
+        return {
+            "id" : self.taskid,
+            "name" : self.name, 
+            "description" : self.description, 
+            "priority" : self.priority, 
+            "state" : self.state 
+        }
 
+    @classmethod
+    def from_dict(cls,data):
+        return cls(data["name"],data["description"],int(data["priority"]),int(data["id"]),int(data["state"]))
 
 class TaskManager:
     def __init__(self):
         self.tasks = []
             
     def addTask(self,task: Task):
-        if len(self.tasks) != 0:
-            id = self.tasks[-1].taskid
-            task.taskid = id
-            self.tasks.append(task)
-        else:
+        
+        if len(self.tasks) == 0:
             task.taskid = 1
-            self.tasks.append(task)
+        else:
+            pastid = self.tasks[-1].taskid 
+            id = pastid + 1
+            task.taskid = id
+        
+        self.tasks.append(task)
+        
         
         
     def showTasks(self):
@@ -39,15 +58,18 @@ class TaskManager:
             print(f"  {task.taskid}        {task.name}          {priority}         {state}")
             
             
-    def deleteTask(self,id):
-        i = id - 1
+    def deleteTask(self,i):
         self.tasks.pop(i)
         print("Tarea eliminada correctamente")
     
-    def taskCompleted(self,id):
-        i = id - 1
+    def taskCompleted(self,i):
         task = self.tasks[i]
         task.state = 1
+        
+    def getId(self,id):
+        for task in self.tasks:
+            if task.taskid == id:
+                return task
     
         
 def clearTerminal():
@@ -60,6 +82,7 @@ def welcome():
     print("=====================================")
     time.sleep(1)
     
+
     
 
 
@@ -75,22 +98,23 @@ def AddTask(taskmanager):
     
     
     
+    
+    
 def ModifyTask(taskmanager):
     print("...EDIT A TASK...")
-    id = int(input("Write the Id of the task to be edited."))
+    id = int(input("Write the Id of the task to be edited: "))
     clearTerminal()
     print("...EDIT A TASK...")
-    i = id - 1
-    mytask = taskmanager.tasks[i]
+    mytask = taskmanager.getId(id)
     if mytask.priority == 1:
         priority = "High"
     elif mytask.priority == 2:
         priority = "Medium"
     else:
         priority = "Low"
-    print(f"Task to be edited: Name:{mytask.name}, Description:{mytask.description}, Priority{priority}\n")
+    print(f"Task to be edited: Name: {mytask.name}, Description: {mytask.description}, Priority: {priority}\n")
     print("       -----------------------------------------------------------           \n")
-    option = int(input("1.Name\n2.Description\n3.Priority\n4.Cancel\nChoose an option from the menu using the numbers:")) 
+    option = int(input("1.Name\n2.Description\n3.Priority\n4.Cancel\nChoose an option from the menu using the numbers: ")) 
     match option:
         case 1:
             newdata = input(f"Name:{mytask.name}\nWrite the new name: ")
@@ -114,10 +138,10 @@ def DeleteTask(taskmanager):
     id = int(input("Write the id of the task to be deleted: "))
     clearTerminal()
     print("...DELET A TASK...")
-    i = id - 1
-    confirm = input(f"Are you sure you want to delete ({taskmanager.tasks[i].name})? use y/n to yes or no")
+    task = taskmanager.getId(id)
+    confirm = input(f"Are you sure you want to delete ({task.name})? use y/n to yes or no: ")
     if confirm == "y":
-        taskmanager.deleteTask(id)
+        taskmanager.deleteTask(taskmanager.tasks.index(task))
         print("Task deleted correctly.")
     else:
         print("Operation canceled.")
@@ -126,8 +150,8 @@ def DeleteTask(taskmanager):
 def MarkCompleted(taskmanager):
     print("...MARK A TASK COMPLETED...")
     id = int(input("Write the id of the task to be marked as completed: "))
-    i = id - 1
-    taskmanager.taskCompleted(id)
+    task = taskmanager.getId(id)
+    taskmanager.taskCompleted(taskmanager.tasks.index(task))
     print("Task marked correctly correctly.")
 
 def menu():
@@ -142,10 +166,28 @@ def menu():
     return option
 
 
+def writeJson(mytaskmanager):
+    data = {
+        "tasks" : [task.toDictionary() for task in mytaskmanager.tasks]
+    }
+
+    with open("tasks.json", "w") as file:
+        json.dump(data,file,indent=4)
 
 
+def readJson(mytaskmanager):
+    file_path = Path("tasks.json")
+    
+    if file_path.exists():
+        with open("tasks.json","r") as file:
+                data = json.load(file)
+                mytaskmanager.tasks = [Task.from_dict(task) for task in data["tasks"]]
+    
+    
+    
 
 def main(mytaskmanager: TaskManager):
+    readJson(mytaskmanager)
     welcome()
     key = True
     while key:
@@ -179,8 +221,12 @@ def main(mytaskmanager: TaskManager):
                 clearTerminal()
             case _:
                 print("Sorry this option is not available.")
+    writeJson(mytaskmanager)
         
         
 clearTerminal()
 mytaskmanager = TaskManager()              
 main(mytaskmanager)
+
+
+
