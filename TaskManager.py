@@ -2,17 +2,26 @@ import os
 import time
 import json
 from pathlib import Path
+from enum import Enum
 
+class State(Enum):
+    PENDING = 0
+    COMPLETED = 1
+    
+class Priority(Enum):
+    HIGH = 1
+    MEDIUM = 2
+    LOW = 3
 
 class Task:
-    def __init__(self,TaskName: str, Description: str,Priority:str,TaskId: int = None,TaskState = 0):
-            self.taskid = TaskId
-            self.name = TaskName
-            self.description = Description
-            self.priority = Priority
-            self.state = TaskState
+    def __init__(self,taskname: str, description: str,priority:str,taskid: int = None,taskstate = 0):
+            self.taskid = taskid
+            self.name = taskname
+            self.description = description
+            self.priority = priority
+            self.state = taskstate
             
-    def toDictionary(self):
+    def to_dictionary(self):
         return {
             "id" : self.taskid,
             "name" : self.name, 
@@ -22,14 +31,14 @@ class Task:
         }
 
     @classmethod
-    def from_dict(cls,data):
+    def from_dictionary(cls,data):
         return cls(data["name"],data["description"],int(data["priority"]),int(data["id"]),int(data["state"]))
 
 class TaskManager:
     def __init__(self):
         self.tasks = []
             
-    def addTask(self,task: Task):
+    def add_task(self,task: Task):
         
         if len(self.tasks) == 0:
             task.taskid = 1
@@ -42,7 +51,7 @@ class TaskManager:
         
         
         
-    def showTasks(self):
+    def show_tasks(self):
         print("  ID  |     Name     |    Priority    |   State   ")
         for task in self.tasks:
             if task.state == 0:
@@ -58,22 +67,25 @@ class TaskManager:
             print(f"  {task.taskid}        {task.name}          {priority}         {state}")
             
             
-    def deleteTask(self,i):
-        self.tasks.pop(i)
+    def delete_task(self,id):
+        self.tasks.pop(id)
         print("Tarea eliminada correctamente")
     
-    def taskCompleted(self,i):
-        task = self.tasks[i]
+    def task_completed(self,id):
+        task = self.tasks[id]
         task.state = 1
         
-    def getId(self,id):
+    def get_task(self,id):
         for task in self.tasks:
             if task.taskid == id:
                 return task
         return None
     
+    
+    
+    
         
-def clearTerminal():
+def clear_terminal():
     os.system("cls")
                 
         
@@ -88,7 +100,7 @@ def welcome():
 
 
 
-def AddTask(taskmanager):
+def add_task(taskmanager):
     print("...ADD A TASK...")
     name = input("Write the name of the Task: ")
     description = input("Write a description for a task: ")
@@ -101,10 +113,10 @@ def AddTask(taskmanager):
     
     
     
-def ModifyTask(taskmanager):
+def modify_task(taskmanager):
     print("...EDIT A TASK...")
     id = int(input("Write the Id of the task to be edited: "))
-    clearTerminal()
+    clear_terminal()
     print("...EDIT A TASK...")
     mytask = taskmanager.getId(id)
     if mytask != None:
@@ -137,10 +149,10 @@ def ModifyTask(taskmanager):
             
     
         
-def DeleteTask(taskmanager):
+def delete_task(taskmanager):
     print("...DELET A TASK...")
     id = int(input("Write the id of the task to be deleted: "))
-    clearTerminal()
+    clear_terminal()
     print("...DELET A TASK...")
     task = taskmanager.getId(id)
     if task != None:
@@ -153,8 +165,7 @@ def DeleteTask(taskmanager):
     else: 
         print("Task not found.")
     
-
-def MarkCompleted(taskmanager):
+def mark_completed(taskmanager):
     print("...MARK A TASK COMPLETED...")
     id = int(input("Write the id of the task to be marked as completed: "))
     task = taskmanager.getId(id)
@@ -164,10 +175,10 @@ def MarkCompleted(taskmanager):
     else:
         print("The task was not found.")
 
-def SearchTask(taskmanager):
+def search_task(taskmanager):
     print("...SEARCH FOR A TASK...")
     option = int(input("Optoins:\n1.Search for ID\n2.Search for name or letter\n Select an option using numbers: "))
-    clearTerminal()
+    clear_terminal()
     print("...SEARCH FOR A TASK...\n\n")
     print("   ------------------------    \n")
     
@@ -220,7 +231,7 @@ def menu():
     return option
 
 
-def writeJson(mytaskmanager):
+def write_json(mytaskmanager):
     data = {
         "tasks" : [task.toDictionary() for task in mytaskmanager.tasks]
     }
@@ -229,7 +240,7 @@ def writeJson(mytaskmanager):
         json.dump(data,file,indent=4)
 
 
-def readJson(mytaskmanager):
+def read_json(mytaskmanager):
     file_path = Path("tasks.json")
     
     if file_path.exists():
@@ -241,49 +252,49 @@ def readJson(mytaskmanager):
     
 
 def main(mytaskmanager: TaskManager):
-    readJson(mytaskmanager)
+    read_json(mytaskmanager)
     welcome()
     key = True
     while key:
-        clearTerminal()
+        clear_terminal()
         option = menu()
         match option:
             case 1: 
-                clearTerminal()
-                AddTask(mytaskmanager)
+                clear_terminal()
+                add_task(mytaskmanager)
                 time.sleep(1)
             case 2:
-                clearTerminal()
-                ModifyTask(mytaskmanager)
+                clear_terminal()
+                modify_task(mytaskmanager)
                 time.sleep(1)
             case 3:
-                clearTerminal()
-                DeleteTask(mytaskmanager)
+                clear_terminal()
+                delete_task(mytaskmanager)
                 time.sleep(1)
             case 4:
-                clearTerminal()
-                MarkCompleted(mytaskmanager)
+                clear_terminal()
+                mark_completed(mytaskmanager)
                 time.sleep(1)
             case 5:
-                clearTerminal()
-                mytaskmanager.showTasks()
+                clear_terminal()
+                mytaskmanager.show_tasks()
                 input("\n\nPress any key to go to menu... ")
             case 6:
-                clearTerminal()
-                SearchTask(mytaskmanager)
+                clear_terminal()
+                search_task(mytaskmanager)
                 time.sleep(2)
             case 7:
                 print("Exiting....")
                 key = False
                 time.sleep(2)
-                clearTerminal()
+                clear_terminal()
             case _:
                 print("Sorry this option is not available.")
-        writeJson(mytaskmanager)
+        write_json(mytaskmanager)
     
         
         
-clearTerminal()
+clear_terminal()
 mytaskmanager = TaskManager()              
 main(mytaskmanager)
 
