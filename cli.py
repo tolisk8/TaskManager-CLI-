@@ -1,158 +1,12 @@
-import os
+from enums import Priority,State
+from task import Task
+from task_manager import TaskManager
+from utils import clear_terminal
 import time
-import json
-from pathlib import Path
-from enum import Enum
 
-class State(Enum):
-    PENDING = 0
-    COMPLETED = 1
-    
-class Priority(Enum):
-    HIGH = 1
-    MEDIUM = 2
-    LOW = 3
-
-class Task:
-    def __init__(self,taskname: str, description: str,priority:str,taskid: int = None,taskstate = 0):
-            self.__taskid = taskid
-            self.__name = taskname
-            self.__description = description
-            self.__priority = priority
-            self.__state = taskstate    
-        
-    def to_dictionary(self):
-        return {
-            "id" : self.taskid,
-            "name" : self.name, 
-            "description" : self.description, 
-            "priority" : self.__priority, 
-            "state" : self.state 
-        }
-
-    @classmethod
-    def from_dictionary(cls,data):
-        return cls(data["name"],data["description"],int(data["priority"]),data["id"],int(data["state"]))
-    
-        
-    @property
-    def taskid(self):
-        return self.__taskid
-    @property
-    def name(self):
-            return self.__name 
-    @property    
-    def description(self):
-            return self.__description 
-    @property   
-    def priority(self):
-            return self.__priority 
-    @property   
-    def state(self):
-            return self.__state 
-    
-    
-    @taskid.setter
-    def taskid(self, value:int):
-        self.__taskid = value
-    @name.setter
-    def name(self,value: str):
-        self.__name = value
-    @description.setter
-    def description(self,value: str):
-            self.__description = value
-    @priority.setter
-    def priority(self,value: int):
-            self.__priority = value
-    @state.setter
-    def state(self, state: int):
-        self.__state = state
-
-class TaskManager:
-    def __init__(self):
-        self.__tasks = []
-        
-    @property
-    def tasks(self):
-        return self.__tasks
-            
-    def add_task(self,task: Task):
-        if len(self.tasks) == 0:
-            id = 1
-        else:
-            id = self.tasks[-1].taskid + 1
-        
-        task.taskid = id
-        self.tasks.append(task)
-        
-        
-        
-    def show_tasks(self):
-        print("  ID  |     Name     |    Priority    |   State   ")
-        for task in self.tasks:
-            print(f"  {task.taskid}        {task.name}          {Priority(task.priority).name}         {State(task.state).name}")
-            
-            
-    def delete_task(self,id):
-        for task in self.tasks:
-            if id == task.taskid:
-                self.tasks.pop(self.tasks.index(task))
-                return True
-        
-        return False
-    
-    
-        
-    
-    def task_completed(self, id):
-        task = self.get_task(id)
-        if task is not None:
-            task.state = 1
-            return True
-        else:
-            return False
-                
-                
-    def get_task(self,id):
-        for task in self.tasks:
-            if task.taskid == id:
-                return task
-        return None    
-    
-    def search_task(self,value):
-        list1 = []
-        for task in self.__tasks:
-            if value.lower() in task.name.lower():
-                print(f" {task.taskid}          {task.name}")
-                list1.append(task)
-        
-        if len(list1) == 0:
-            return False
-        
-        return True    
-        
-    def write_json(self):
-        data = {
-            "tasks" : [task.to_dictionary() for task in self.tasks]
-        }
-
-        with open("tasks.json", "w") as file:
-            json.dump(data,file,indent=4)
-            
-    def read_json(self):
-        file_path = Path("tasks.json")
-        
-        if file_path.exists():
-            with open("tasks.json","r") as file:
-                    data = json.load(file)
-                    self.__tasks = [Task.from_dictionary(task) for task in data["tasks"]]
-        
-    
-    
-    
 class CLI:
     
-    def __init__(self, manager):
+    def __init__(self, manager: TaskManager):
         self.__manager = manager
         
     @property
@@ -264,7 +118,6 @@ class CLI:
         return option
     
     def run(self):
-        self.manager.read_json()
         self.welcome()
         key = True
         while key:
@@ -302,31 +155,5 @@ class CLI:
                     clear_terminal()
                 case _:
                     print("Sorry this option is not available.")
-            self.manager.write_json()
+    
             
-    
-        
-    
-    
-
-                
-        
-
-        
-def clear_terminal():
-    os.system("cls")
-
-    
-
-
-
-        
-        
-clear_terminal()
-mytaskmanager = TaskManager()              
-cli = CLI(mytaskmanager)
-cli.run()
-
-
-
-
