@@ -2,6 +2,9 @@ from enums import Priority,State
 
 
 class Task:
+    
+    """Creates a Task object with an Id, Name, Description, Priorirty, and the state"""
+    
     def __init__(self,taskname: str, description: str,priority:str,taskid: int = None,taskstate = 0):
             self.__taskid = taskid
             self.__name = taskname
@@ -10,6 +13,7 @@ class Task:
             self.__state = taskstate    
         
     def to_dictionary(self):
+        """Returns a dictionary for saving data"""
         return {
             "id" : self.taskid,
             "name" : self.name, 
@@ -20,6 +24,7 @@ class Task:
 
     @classmethod
     def from_dictionary(cls,data):
+        """Returns task object for loading data"""
         return cls(data["name"],data["description"],int(data["priority"]),data["id"],int(data["state"]))
     
         

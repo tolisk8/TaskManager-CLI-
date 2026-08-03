@@ -4,12 +4,23 @@ from task_manager import TaskManager
 from cli import CLI
 from storage import Storage
 
-storage = Storage()
 
-clear_terminal()
-mytaskmanager = TaskManager() 
-if storage.load():
-    mytaskmanager = storage.load()        
-cli = CLI(mytaskmanager)
-cli.run()
-storage.save(mytaskmanager)
+def main():
+    storage = Storage()
+
+    clear_terminal()
+    mytaskmanager = TaskManager()
+    mylist = storage.load()   
+        
+    if len(mylist) != 0:
+        for task in mylist:
+            mytaskmanager.add_task(task)
+        
+    cli = CLI(mytaskmanager)
+    cli.run()
+    storage.save(mytaskmanager)
+    
+if __name__ == "__main__":
+    main()
+
+

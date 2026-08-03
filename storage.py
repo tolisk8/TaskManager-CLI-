@@ -4,6 +4,8 @@ from pathlib import Path
 
 class Storage:
     
+    """Manages loading and saving of data using JSON"""
+    
     def __init__(self, filename = "tasks.json"):
         self.path = Path(filename)
 

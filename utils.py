@@ -1,4 +1,9 @@
 import os
 
 def clear_terminal():
-    os.system("cls")
+    if os.name == "nt":
+        os.system("cls")
+    else:
+        os.system("clear")
+        
+    
